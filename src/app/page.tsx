@@ -1,103 +1,235 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ExternalLink, Film, Tv, Waves, Wind, Flame, Mountain } from 'lucide-react';
+
+interface Recommendation {
+  title: string;
+  year: number;
+  type: 'Movie' | 'TV Show';
+  brief_reasoning: string;
+  imdb_id?: string;
+  imdb_url?: string;
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [title1, setTitle1] = useState('');
+  const [title2, setTitle2] = useState('');
+  const [title3, setTitle3] = useState('');
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!title1.trim() || !title2.trim() || !title3.trim()) {
+      setError('Please fill in all three fields');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    setRecommendations([]);
+
+    try {
+      const response = await fetch('/api/recommendations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title1: title1.trim(),
+          title2: title2.trim(),
+          title3: title3.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to get recommendations');
+      }
+
+      const data = await response.json();
+      setRecommendations(data.recommendations || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getElementIcon = (index: number) => {
+    const icons = [Waves, Wind, Flame, Mountain, Waves];
+    const Icon = icons[index % icons.length];
+    return <Icon className="w-5 h-5" />;
+  };
+
+  const getElementColor = (index: number) => {
+    const colors = [
+      'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+      'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+      'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+      'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+    ];
+    return colors[index % colors.length];
+  };
+
+  return (
+    <main className="min-h-screen p-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-6xl font-bold text-primary mb-4 animate-air-float">
+            🌊 Elemental Recs 🔥
+          </h1>
+          <p className="text-xl text-muted-foreground mb-2">
+            Your AI Bending Movie & TV Show Recommender
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Tell us three movies or shows you love, and we&apos;ll bend the elements to find your next binge
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        {/* Input Form */}
+        <Card className="mb-8 border-2 border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Waves className="w-6 h-6 text-primary" />
+              What do you love to watch?
+            </CardTitle>
+            <CardDescription>
+              Enter three movies or TV shows you enjoyed to get personalized recommendations
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-3">
+                <div>
+                  <label htmlFor="title1" className="text-sm font-medium text-foreground mb-2 block">
+                    First Favorite
+                  </label>
+                  <Input
+                    id="title1"
+                    placeholder="e.g., Avatar: The Last Airbender"
+                    value={title1}
+                    onChange={(e) => setTitle1(e.target.value)}
+                    className="border-primary/30 focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="title2" className="text-sm font-medium text-foreground mb-2 block">
+                    Second Favorite
+                  </label>
+                  <Input
+                    id="title2"
+                    placeholder="e.g., Studio Ghibli films"
+                    value={title2}
+                    onChange={(e) => setTitle2(e.target.value)}
+                    className="border-primary/30 focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="title3" className="text-sm font-medium text-foreground mb-2 block">
+                    Third Favorite
+                  </label>
+                  <Input
+                    id="title3"
+                    placeholder="e.g., The Lord of the Rings"
+                    value={title3}
+                    onChange={(e) => setTitle3(e.target.value)}
+                    className="border-primary/30 focus:border-primary"
+                  />
+                </div>
+              </div>
+              
+              {error && (
+                <div className="text-red-600 text-sm mt-2">
+                  {error}
+                </div>
+              )}
+
+              <Button 
+                type="submit" 
+                disabled={isLoading}
+                className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    Bending the Elements...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Waves className="w-4 h-4" />
+                    Find My Next Binge
+                  </div>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Recommendations */}
+        {recommendations.length > 0 && (
+          <div>
+            <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
+              <Wind className="w-6 h-6 text-primary" />
+              Your Elemental Recommendations
+            </h2>
+            
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {recommendations.map((rec, index) => (
+                <Card key={index} className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-2">
+                        {getElementIcon(index)}
+                        <CardTitle className="text-lg leading-tight">{rec.title}</CardTitle>
+                      </div>
+                      <Badge variant="secondary" className={getElementColor(index)}>
+                        {rec.type === 'Movie' ? <Film className="w-3 h-3 mr-1" /> : <Tv className="w-3 h-3 mr-1" />}
+                        {rec.type}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span>{rec.year}</span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-foreground leading-relaxed">
+                      {rec.brief_reasoning}
+                    </p>
+                    
+                    {rec.imdb_url && (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full"
+                        onClick={() => window.open(rec.imdb_url, '_blank')}
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        View on IMDb
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        <footer className="mt-16 text-center text-sm text-muted-foreground">
+          <p>Powered by Gemini AI & The Movie Database</p>
+          <p className="mt-1">May the elements guide your next watch 🌊🔥🌪️🗻</p>
+        </footer>
+      </div>
+    </main>
   );
 }
