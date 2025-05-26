@@ -165,4 +165,44 @@ export async function getIMDBId(tmdbId: number, mediaType: string): Promise<stri
     console.error('Error getting IMDB ID:', error);
     return null;
   }
+}
+
+export async function searchTMDBForAutocomplete(query: string): Promise<TMDBSearchResult[]> {
+  const tmdbApiKey = process.env.TMDB_API_KEY;
+  if (!tmdbApiKey || query.length < 2) {
+    return [];
+  }
+
+  try {
+    const encodedQuery = encodeURIComponent(query);
+    const searchUrl = `https://api.themoviedb.org/3/search/multi?api_key=${tmdbApiKey}&query=${encodedQuery}&page=1`;
+    
+    const response = await fetch(searchUrl);
+    const data = await response.json();
+    
+    if (data.results) {
+      // Filter and limit results for autocomplete
+      return data.results
+        .filter((result: TMDBSearchResult) => 
+          (result.media_type === 'movie' || result.media_type === 'tv') &&
+          (result.title || result.name) &&
+          result.vote_count && result.vote_count > 10 // Filter out obscure entries
+        )
+        .slice(0, 8) // Limit to 8 results for UI
+        .map((result: TMDBSearchResult) => ({
+          ...result,
+          display_title: result.title || result.name,
+          display_year: result.release_date 
+            ? new Date(result.release_date).getFullYear()
+            : result.first_air_date
+            ? new Date(result.first_air_date).getFullYear()
+            : null
+        }));
+    }
+    
+    return [];
+  } catch (error) {
+    console.error('Error searching TMDB for autocomplete:', error);
+    return [];
+  }
 } 
