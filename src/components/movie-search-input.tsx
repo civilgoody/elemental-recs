@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Film, Tv, Search, X } from 'lucide-react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { X, ChevronsUpDown } from 'lucide-react';
 import { TMDBSearchResult } from '@/lib/types';
-import Image from 'next/image';
+import { PosterImage } from '@/components/poster-image';
+import { MediaInfo } from '@/components/media-info';
 
 interface MovieSearchInputProps {
   label: string;
@@ -17,19 +18,15 @@ interface MovieSearchInputProps {
 }
 
 export function MovieSearchInput({ label, placeholder, value, onChange, disabled }: MovieSearchInputProps) {
+  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<TMDBSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const resultsRef = useRef<HTMLDivElement>(null);
 
   // Debounced search
   useEffect(() => {
     if (query.length < 2) {
       setResults([]);
-      setIsOpen(false);
       return;
     }
 
@@ -39,8 +36,6 @@ export function MovieSearchInput({ label, placeholder, value, onChange, disabled
         const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
         const data = await response.json();
         setResults(data.results || []);
-        setIsOpen(true);
-        setSelectedIndex(-1);
       } catch (error) {
         console.error('Search error:', error);
         setResults([]);
@@ -52,63 +47,15 @@ export function MovieSearchInput({ label, placeholder, value, onChange, disabled
     return () => clearTimeout(timeoutId);
   }, [query]);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (resultsRef.current && !resultsRef.current.contains(event.target as Node) &&
-          inputRef.current && !inputRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   const handleSelect = (result: TMDBSearchResult) => {
     onChange(result);
+    setOpen(false);
     setQuery('');
-    setIsOpen(false);
-    setResults([]);
   };
 
   const handleClear = () => {
     onChange(null);
     setQuery('');
-    setIsOpen(false);
-    setResults([]);
-    inputRef.current?.focus();
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!isOpen || results.length === 0) return;
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedIndex(prev => (prev < results.length - 1 ? prev + 1 : 0));
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedIndex(prev => (prev > 0 ? prev - 1 : results.length - 1));
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedIndex >= 0 && selectedIndex < results.length) {
-          handleSelect(results[selectedIndex]);
-        }
-        break;
-      case 'Escape':
-        setIsOpen(false);
-        setSelectedIndex(-1);
-        break;
-    }
-  };
-
-  const formatTitle = (result: TMDBSearchResult) => {
-    const title = result.title || result.name || '';
-    const year = result.display_year;
-    return year ? `${title} (${year})` : title;
   };
 
   // If a value is selected, show the selection
@@ -117,37 +64,8 @@ export function MovieSearchInput({ label, placeholder, value, onChange, disabled
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">{label}</label>
         <div className="flex items-center gap-3 p-3 border border-border rounded-md bg-muted/50">
-          {/* Selected poster */}
-          <div className="flex-shrink-0 w-10 h-14 bg-muted rounded overflow-hidden">
-            {value.poster_path ? (
-              <Image
-                src={`https://image.tmdb.org/t/p/w92${value.poster_path}`}
-                alt={`${formatTitle(value)} poster`}
-                className="w-full h-full object-cover"
-                loading="lazy"
-                width={40}
-                height={60}
-              />
-            ) : (
-              <div className="w-full h-full bg-muted flex items-center justify-center">
-                {value.media_type === 'movie' ? (
-                  <Film className="w-5 h-5 text-muted-foreground" />
-                ) : (
-                  <Tv className="w-5 h-5 text-muted-foreground" />
-                )}
-              </div>
-            )}
-          </div>
-          
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <div className="flex-1 min-w-0">
-              <div className="font-medium truncate">{formatTitle(value)}</div>
-              <Badge variant="secondary" className="text-xs mt-1">
-                {value.media_type === 'movie' ? 'Movie' : 'TV Show'}
-              </Badge>
-            </div>
-          </div>
-          
+          <PosterImage item={value} size="sm" />
+          <MediaInfo item={value} variant="detailed" showFullTitle />
           <Button
             type="button"
             variant="ghost"
@@ -164,99 +82,65 @@ export function MovieSearchInput({ label, placeholder, value, onChange, disabled
   }
 
   return (
-    <div className="space-y-2 relative">
+    <div className="space-y-2">
       <label className="text-sm font-medium text-foreground">{label}</label>
-      <div className="relative">
-        <div className="relative">
-          <Input
-            ref={inputRef}
-            placeholder={placeholder}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onFocus={() => {
-              if (results.length > 0) setIsOpen(true);
-            }}
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between h-auto p-3 font-normal"
             disabled={disabled}
-            className="pr-8"
-          />
-          <div className="absolute right-2 top-1/2 -translate-y-1/2">
-            {isLoading ? (
-              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin opacity-50" />
-            ) : (
-              <Search className="w-4 h-4 text-muted-foreground" />
-            )}
-          </div>
-        </div>
-
-        {/* Results dropdown */}
-        {isOpen && results.length > 0 && (
-          <div
-            ref={resultsRef}
-            className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-80 overflow-y-auto"
           >
-            {results.map((result, index) => (
-              <button
-                key={result.id}
-                type="button"
-                className={`w-full text-left p-3 hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-3 ${
-                  index === selectedIndex ? 'bg-accent text-accent-foreground' : ''
-                }`}
-                onClick={() => handleSelect(result)}
-              >
-                {/* Poster Image */}
-                <div className="flex-shrink-0 w-12 h-16 bg-muted rounded overflow-hidden">
-                  {result.poster_path ? (
-                    <Image
-                      src={`https://image.tmdb.org/t/p/w92${result.poster_path}`}
-                      alt={`${formatTitle(result)} poster`}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                      width={48}
-                      height={72}
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-muted flex items-center justify-center">
-                      {result.media_type === 'movie' ? (
-                        <Film className="w-6 h-6 text-muted-foreground" />
-                      ) : (
-                        <Tv className="w-6 h-6 text-muted-foreground" />
-                      )}
-                    </div>
-                  )}
-                </div>
-                
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{formatTitle(result)}</div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="outline" className="text-xs">
-                      {result.media_type === 'movie' ? 'Movie' : 'TV Show'}
-                    </Badge>
-                    {result.original_language && result.original_language !== 'en' && (
-                      <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                        {result.original_language.toUpperCase()}
-                      </span>
-                    )}
-                    {result.vote_average && result.vote_average > 0 && (
-                      <span className="text-xs text-muted-foreground">
-                        ⭐ {result.vote_average.toFixed(1)}
-                      </span>
-                    )}
+            <span className="text-muted-foreground">{placeholder}</span>
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        
+        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+          <Command shouldFilter={false}>
+            <CommandInput
+              placeholder="Type to search movies and TV shows..."
+              value={query}
+              onValueChange={setQuery}
+            />
+            
+            <CommandList className="max-h-64">
+              {isLoading && (
+                <div className="p-3 text-center text-sm text-muted-foreground">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    Searching...
                   </div>
                 </div>
-              </button>
-            ))}
-          </div>
-        )}
+              )}
 
-        {/* No results message */}
-        {isOpen && !isLoading && query.length >= 2 && results.length === 0 && (
-          <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg p-3 text-center text-muted-foreground text-sm">
-            No movies or TV shows found for &#34;{query}&#34;
-          </div>
-        )}
-      </div>
+              {!isLoading && query.length >= 2 && results.length === 0 && (
+                <CommandEmpty>No movies or TV shows found for &#34;{query}&#34;</CommandEmpty>
+              )}
+
+              {results.length > 0 && (
+                <CommandGroup>
+                  {results.map((result) => (
+                    <CommandItem
+                      key={result.id}
+                      value={result.id.toString()}
+                      onSelect={() => handleSelect(result)}
+                      className="p-3 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3 w-full">
+                        <PosterImage item={result} size="md" />
+                        <MediaInfo item={result} variant="compact" showFullTitle />
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 } 
