@@ -4,8 +4,9 @@ import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Film, Tv, Search, X, Check } from 'lucide-react';
+import { Film, Tv, Search, X } from 'lucide-react';
 import { TMDBSearchResult } from '@/lib/types';
+import Image from 'next/image';
 
 interface MovieSearchInputProps {
   label: string;
@@ -115,25 +116,45 @@ export function MovieSearchInput({ label, placeholder, value, onChange, disabled
     return (
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">{label}</label>
-        <div className="flex items-center gap-2 p-3 border border-border rounded-md bg-muted/50">
-          <div className="flex items-center gap-2 flex-1">
-            {value.media_type === 'movie' ? (
-              <Film className="w-4 h-4 text-muted-foreground" />
+        <div className="flex items-center gap-3 p-3 border border-border rounded-md bg-muted/50">
+          {/* Selected poster */}
+          <div className="flex-shrink-0 w-10 h-14 bg-muted rounded overflow-hidden">
+            {value.poster_path ? (
+              <Image
+                src={`https://image.tmdb.org/t/p/w92${value.poster_path}`}
+                alt={`${formatTitle(value)} poster`}
+                className="w-full h-full object-cover"
+                loading="lazy"
+                width={40}
+                height={60}
+              />
             ) : (
-              <Tv className="w-4 h-4 text-muted-foreground" />
+              <div className="w-full h-full bg-muted flex items-center justify-center">
+                {value.media_type === 'movie' ? (
+                  <Film className="w-5 h-5 text-muted-foreground" />
+                ) : (
+                  <Tv className="w-5 h-5 text-muted-foreground" />
+                )}
+              </div>
             )}
-            <span className="font-medium">{formatTitle(value)}</span>
-            <Badge variant="secondary" className="text-xs">
-              {value.media_type === 'movie' ? 'Movie' : 'TV Show'}
-            </Badge>
           </div>
+          
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="flex-1 min-w-0">
+              <div className="font-medium truncate">{formatTitle(value)}</div>
+              <Badge variant="secondary" className="text-xs mt-1">
+                {value.media_type === 'movie' ? 'Movie' : 'TV Show'}
+              </Badge>
+            </div>
+          </div>
+          
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={handleClear}
             disabled={disabled}
-            className="h-6 w-6 p-0"
+            className="h-6 w-6 p-0 flex-shrink-0"
           >
             <X className="w-3 h-3" />
           </Button>
@@ -172,33 +193,58 @@ export function MovieSearchInput({ label, placeholder, value, onChange, disabled
         {isOpen && results.length > 0 && (
           <div
             ref={resultsRef}
-            className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-64 overflow-y-auto"
+            className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-80 overflow-y-auto"
           >
             {results.map((result, index) => (
               <button
                 key={result.id}
                 type="button"
-                className={`w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-2 ${
+                className={`w-full text-left p-3 hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-3 ${
                   index === selectedIndex ? 'bg-accent text-accent-foreground' : ''
                 }`}
                 onClick={() => handleSelect(result)}
               >
-                {result.media_type === 'movie' ? (
-                  <Film className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                ) : (
-                  <Tv className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{formatTitle(result)}</div>
-                  {result.original_language && result.original_language !== 'en' && (
-                    <div className="text-xs text-muted-foreground">
-                      {result.original_language.toUpperCase()}
+                {/* Poster Image */}
+                <div className="flex-shrink-0 w-12 h-16 bg-muted rounded overflow-hidden">
+                  {result.poster_path ? (
+                    <Image
+                      src={`https://image.tmdb.org/t/p/w92${result.poster_path}`}
+                      alt={`${formatTitle(result)} poster`}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      width={48}
+                      height={72}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-muted flex items-center justify-center">
+                      {result.media_type === 'movie' ? (
+                        <Film className="w-6 h-6 text-muted-foreground" />
+                      ) : (
+                        <Tv className="w-6 h-6 text-muted-foreground" />
+                      )}
                     </div>
                   )}
                 </div>
-                <Badge variant="outline" className="text-xs">
-                  {result.media_type === 'movie' ? 'Movie' : 'TV Show'}
-                </Badge>
+                
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate">{formatTitle(result)}</div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="outline" className="text-xs">
+                      {result.media_type === 'movie' ? 'Movie' : 'TV Show'}
+                    </Badge>
+                    {result.original_language && result.original_language !== 'en' && (
+                      <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                        {result.original_language.toUpperCase()}
+                      </span>
+                    )}
+                    {result.vote_average && result.vote_average > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        ⭐ {result.vote_average.toFixed(1)}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </button>
             ))}
           </div>

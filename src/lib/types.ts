@@ -42,6 +42,8 @@ export interface TMDBSearchResult {
   vote_average?: number;
   vote_count?: number;
   popularity?: number;
+  poster_path?: string;
+  backdrop_path?: string;
   display_title?: string;
   display_year?: number;
 }
