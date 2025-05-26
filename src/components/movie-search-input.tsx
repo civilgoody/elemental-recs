@@ -131,7 +131,7 @@ export function MovieSearchInput({ label, placeholder, value, onChange, disabled
                     >
                       <div className="flex items-center gap-3 w-full">
                         <PosterImage item={result} size="md" />
-                        <MediaInfo item={result} variant="compact" showFullTitle />
+                        <MediaInfo item={result} variant="compact" />
                       </div>
                     </CommandItem>
                   ))}

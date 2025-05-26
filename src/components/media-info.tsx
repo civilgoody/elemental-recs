@@ -13,18 +13,18 @@ export function MediaInfo({ item, variant = 'compact', showFullTitle = false }: 
   const year = item.display_year;
   const fullTitle = year ? `${title} (${year})` : title;
   
-  const isTruncated = !showFullTitle && fullTitle.length > 50;
-  const displayTitle = showFullTitle ? fullTitle : (
-    isTruncated ? `${fullTitle.substring(0, 60)}...` : fullTitle
-  );
+  // For compact variant without showFullTitle, always use line-clamp and show tooltip for longer titles
+  const shouldShowTooltip = !showFullTitle && variant === 'compact' && fullTitle.length > 40;
 
   const TitleComponent = ({ children, className }: { children: React.ReactNode; className: string }) => {
-    if (isTruncated) {
+    const baseClassName = showFullTitle ? className : `${className} line-clamp-2`;
+    
+    if (shouldShowTooltip) {
       return (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className={className}>{children}</div>
+              <div className={baseClassName}>{children}</div>
             </TooltipTrigger>
             <TooltipContent>
               <p className="max-w-xs">{fullTitle}</p>
@@ -33,14 +33,14 @@ export function MediaInfo({ item, variant = 'compact', showFullTitle = false }: 
         </TooltipProvider>
       );
     }
-    return <div className={className}>{children}</div>;
+    return <div className={baseClassName}>{children}</div>;
   };
 
   if (variant === 'compact') {
     return (
       <div className="flex-1 min-w-0">
         <TitleComponent className="font-medium">
-          {displayTitle}
+          {fullTitle}
         </TitleComponent>
         <div className="flex items-center gap-2 mt-0.5">
           <Badge variant="outline" className="text-xs">
@@ -65,7 +65,7 @@ export function MediaInfo({ item, variant = 'compact', showFullTitle = false }: 
   return (
     <div className="flex-1 min-w-0">
       <TitleComponent className="font-medium">
-        {displayTitle}
+        {fullTitle}
       </TitleComponent>
       <Badge variant="secondary" className="text-xs mt-1">
         {item.media_type === 'movie' ? 'Movie' : 'TV Show'}
