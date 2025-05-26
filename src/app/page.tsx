@@ -7,14 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { ExternalLink, Film, Tv, Waves, Wind, Flame, Mountain } from 'lucide-react';
 
-interface Recommendation {
-  title: string;
-  year: number;
-  type: 'Movie' | 'TV Show';
-  brief_reasoning: string;
-  imdb_id?: string;
-  imdb_url?: string;
-}
+import { Recommendation } from '@/lib/types';
 
 export default function Home() {
   const [title1, setTitle1] = useState('');
