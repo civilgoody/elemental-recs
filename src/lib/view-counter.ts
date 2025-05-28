@@ -1,4 +1,6 @@
-import { kv } from '@vercel/kv';
+import { Redis } from '@upstash/redis'
+
+const redis = Redis.fromEnv()
 
 // Get visitor identifier (IP address from request)
 function getVisitorId(request: Request): string {
@@ -22,7 +24,7 @@ export async function incrementViews(request: Request) {
     const today = getTodayKey();
     
     // Use Redis pipeline for atomic operations
-    const pipeline = kv.pipeline();
+    const pipeline = redis.pipeline();
     
     // Increment total views
     pipeline.incr('elemental:total_views');
@@ -37,12 +39,12 @@ export async function incrementViews(request: Request) {
     
     // Get the results
     const totalViews = results[0] as number;
-    const todayUniqueCount = await kv.scard(`elemental:unique:${today}`);
+    const todayUniqueCount = await redis.scard(`elemental:unique:${today}`);
     
     return {
       totalViews,
       todayUnique: todayUniqueCount,
-      isNewVisitorToday: (await kv.sismember(`elemental:unique:${today}`, visitorId)) === 1
+      isNewVisitorToday: (await redis.sismember(`elemental:unique:${today}`, visitorId)) === 1
     };
   } catch (error) {
     console.error('Error incrementing views:', error);
@@ -61,8 +63,8 @@ export async function getViewStats() {
     const today = getTodayKey();
     
     const [totalViews, todayUnique] = await Promise.all([
-      kv.get('elemental:total_views') || 0,
-      kv.scard(`elemental:unique:${today}`)
+      redis.get('elemental:total_views') || 0,
+      redis.scard(`elemental:unique:${today}`)
     ]);
     
     return {
