@@ -19,6 +19,13 @@ function getTodayKey(): string {
 
 // Increment view counter
 export async function incrementViews(request: Request) {
+  if (process.env.NODE_ENV === 'development') {
+    return {
+      totalViews: 0,
+      todayUnique: 0,
+      isNewVisitorToday: false
+    };
+  }
   try {
     const visitorId = getVisitorId(request);
     const today = getTodayKey();
