@@ -8,9 +8,21 @@ export interface RecommendationInput {
   title1: string;
   title2: string;
   title3: string;
-  context1?: Context;
-  context2?: Context;
-  context3?: Context;
+  context1?: {
+    year?: number;
+    country?: string;
+    language?: string;
+  };
+  context2?: {
+    year?: number;
+    country?: string;
+    language?: string;
+  };
+  context3?: {
+    year?: number;
+    country?: string;
+    language?: string;
+  };
 }
 
 export interface Recommendation {
@@ -22,6 +34,9 @@ export interface Recommendation {
   original_language?: string;
   imdb_id?: string;
   imdb_url?: string;
+  poster_path?: string;
+  backdrop_path?: string;
+  tmdb_id?: number;
 }
 
 export interface TMDBSearchResult {

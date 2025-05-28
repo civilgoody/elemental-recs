@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Film, Tv, Waves, Wind, Flame, Mountain } from 'lucide-react';
+import { Waves, Wind } from 'lucide-react';
 import { MovieSearchInput } from '@/components/movie-search-input';
 import { ViewCounter } from '@/components/view-counter';
+import { RecommendationCard } from '@/components/recommendation-card';
 
 import { Recommendation, TMDBSearchResult } from '@/lib/types';
 
@@ -71,23 +71,6 @@ export default function Home() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const getElementIcon = (index: number) => {
-    const icons = [Waves, Wind, Flame, Mountain, Waves];
-    const Icon = icons[index % icons.length];
-    return <Icon className="w-5 h-5" />;
-  };
-
-  const getElementColor = (index: number) => {
-    const colors = [
-      'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-      'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-      'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-    ];
-    return colors[index % colors.length];
   };
 
   return (
@@ -189,40 +172,11 @@ export default function Home() {
             
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {recommendations.map((rec, index) => (
-                <Card key={index} className="hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        {getElementIcon(index)}
-                        <CardTitle className="text-lg leading-tight">{rec.title}</CardTitle>
-                      </div>
-                      <Badge variant="secondary" className={getElementColor(index)}>
-                        {rec.type === 'Movie' ? <Film className="w-3 h-3 mr-1" /> : <Tv className="w-3 h-3 mr-1" />}
-                        {rec.type}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span>{rec.year}</span>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-foreground leading-relaxed">
-                      {rec.brief_reasoning}
-                    </p>
-                    
-                    {rec.imdb_url && (
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="w-full"
-                        onClick={() => window.open(rec.imdb_url, '_blank')}
-                      >
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        View on IMDb
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
+                <RecommendationCard 
+                  key={index} 
+                  recommendation={rec} 
+                  index={index} 
+                />
               ))}
             </div>
           </div>
