@@ -183,3 +183,8 @@ Focus on providing diverse and high-quality recommendations that go beyond obvio
 * How many recommendations should be displayed per request for the MVP (e.g., 3, 5, 10)? (Let's assume 5 for now based on the prompt example).
 * Specifics of the "Avatar" theme implementation – which nation's aesthetic will be primary? (Water Tribe).
 * Fallback strategy if TMDB doesn't find a title suggested by the LLM (e.g., **skip**, or try a broader search).
+
+**12. Cool Features**
+- Streaming/skeleton loading
+- Ratings for recommendations
+- Consistent cards

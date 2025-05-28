@@ -1,22 +1,16 @@
+export interface Context {
+  year?: number;
+  country?: string;
+  language?: string;
+}
+
 export interface RecommendationInput {
   title1: string;
   title2: string;
   title3: string;
-  context1?: {
-    year?: number;
-    country?: string;
-    language?: string;
-  };
-  context2?: {
-    year?: number;
-    country?: string;
-    language?: string;
-  };
-  context3?: {
-    year?: number;
-    country?: string;
-    language?: string;
-  };
+  context1?: Context;
+  context2?: Context;
+  context3?: Context;
 }
 
 export interface Recommendation {

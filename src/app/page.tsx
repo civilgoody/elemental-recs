@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { ExternalLink, Film, Tv, Waves, Wind, Flame, Mountain } from 'lucide-react';
 import { MovieSearchInput } from '@/components/movie-search-input';
+import { ViewCounter } from '@/components/view-counter';
 
 import { Recommendation, TMDBSearchResult } from '@/lib/types';
 
@@ -100,9 +101,10 @@ export default function Home() {
           <p className="text-xl text-muted-foreground mb-2">
             Your AI Bending Movie & TV Show Recommender
           </p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground mb-4">
             Search and select three verified movies or shows, and we&apos;ll bend the elements to find your next binge
           </p>
+          <ViewCounter />
         </div>
 
         {/* Input Form */}
