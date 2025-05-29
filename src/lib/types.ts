@@ -66,3 +66,4 @@ export interface SearchMatch {
   score: number;
   matchReason: string;
 } 
+ 

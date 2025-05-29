@@ -8,9 +8,10 @@ import { Recommendation } from '@/lib/types';
 interface RecommendationCardProps {
   recommendation: Recommendation;
   index: number;
+  onClick?: () => void;
 }
 
-export function RecommendationCard({ recommendation, index }: RecommendationCardProps) {
+export function RecommendationCard({ recommendation, index, onClick }: RecommendationCardProps) {
   const getElementIcon = (index: number) => {
     const icons = [Waves, Wind, Flame, Mountain, Waves];
     const Icon = icons[index % icons.length];
@@ -36,7 +37,12 @@ export function RecommendationCard({ recommendation, index }: RecommendationCard
     : null;
 
   return (
-    <Card className="flex flex-col h-full hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary overflow-hidden">
+    <Card 
+      className={`flex flex-col h-full hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary overflow-hidden ${
+        onClick ? 'cursor-pointer hover:border-l-primary/80' : ''
+      }`}
+      onClick={onClick}
+    >
       {/* Image Section */}
       {imageUrl ? (
         <div className="relative w-full h-48 bg-muted overflow-hidden">
@@ -119,3 +125,4 @@ export function RecommendationCard({ recommendation, index }: RecommendationCard
     </Card>
   );
 } 
+ 

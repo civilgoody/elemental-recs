@@ -206,3 +206,4 @@ export async function searchTMDBForAutocomplete(query: string): Promise<TMDBSear
     return [];
   }
 } 
+ 

@@ -34,14 +34,14 @@ export async function POST(request: NextRequest) {
             const mediaType = tmdbResult.media_type || (rec.type === 'Movie' ? 'movie' : 'tv');
             const imdbId = await getIMDBId(tmdbResult.id, mediaType);
             
-            return {
-              ...rec,
+              return {
+                ...rec,
               imdb_id: imdbId || undefined,
               imdb_url: imdbId ? `https://www.imdb.com/title/${imdbId}/` : undefined,
               poster_path: tmdbResult.poster_path || undefined,
               backdrop_path: tmdbResult.backdrop_path || undefined,
               tmdb_id: tmdbResult.id
-            };
+              };
           }
         } catch (error) {
           console.error(`Error enhancing recommendation for ${rec.title}:`, error);

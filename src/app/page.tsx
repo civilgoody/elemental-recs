@@ -7,6 +7,7 @@ import { Waves, Wind } from 'lucide-react';
 import { MovieSearchInput } from '@/components/movie-search-input';
 import { ViewCounter } from '@/components/view-counter';
 import { RecommendationCard } from '@/components/recommendation-card';
+import { RecommendationSheet } from '@/components/recommendation-sheet';
 
 import { Recommendation, TMDBSearchResult } from '@/lib/types';
 
@@ -17,6 +18,8 @@ export default function Home() {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [selectedRecommendationIndex, setSelectedRecommendationIndex] = useState(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +76,11 @@ export default function Home() {
     }
   };
 
+  const handleRecommendationClick = (index: number) => {
+    setSelectedRecommendationIndex(index);
+    setIsSheetOpen(true);
+  };
+
   return (
     <main className="min-h-screen p-8">
       <div className="max-w-4xl mx-auto">
@@ -110,14 +118,14 @@ export default function Home() {
                   value={selection1}
                   onChange={setSelection1}
                   disabled={isLoading}
-                />
+                  />
                 <MovieSearchInput
                   label="Second Favorite"
                   placeholder="Search for another one..."
                   value={selection2}
                   onChange={setSelection2}
                   disabled={isLoading}
-                />
+                  />
                 <MovieSearchInput
                   label="Third Favorite"
                   placeholder="And one more..."
@@ -134,23 +142,23 @@ export default function Home() {
               )}
 
               <div className="space-y-2">
-                <Button 
-                  type="submit" 
+              <Button 
+                type="submit" 
                   disabled={isLoading || !selection1 || !selection2 || !selection3}
                   className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50"
-                >
-                  {isLoading ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      Bending the Elements...
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Waves className="w-4 h-4" />
-                      Find My Next Binge
-                    </div>
-                  )}
-                </Button>
+              >
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    Bending the Elements...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Waves className="w-4 h-4" />
+                    Find My Next Binge
+                  </div>
+                )}
+              </Button>
                 
                 {(!selection1 || !selection2 || !selection3) && (
                   <p className="text-sm text-muted-foreground">
@@ -176,6 +184,7 @@ export default function Home() {
                   key={index} 
                   recommendation={rec} 
                   index={index} 
+                  onClick={() => handleRecommendationClick(index)}
                 />
               ))}
             </div>
@@ -187,6 +196,14 @@ export default function Home() {
           <p>Powered by Gemini AI & The Movie Database</p>
           <p className="mt-1">May the elements guide your next watch 🌊🔥🌪️🗻</p>
         </footer>
+
+        {/* Recommendation Sheet Modal */}
+        <RecommendationSheet
+          isOpen={isSheetOpen}
+          onOpenChange={setIsSheetOpen}
+          recommendations={recommendations}
+          initialIndex={selectedRecommendationIndex}
+        />
       </div>
     </main>
   );
