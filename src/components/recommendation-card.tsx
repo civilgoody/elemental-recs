@@ -75,7 +75,7 @@ export function RecommendationCard({ recommendation, index, onClick }: Recommend
                 <Tv className="w-12 h-12 text-primary mx-auto" />
               )}
             </div>
-            <div className="text-lg font-semibold text-primary mb-1">{recommendation.title}</div>
+            <div className="text-lg font-semibold text-primary mb-1 line-clamp-1">{recommendation.title}</div>
             <div className="text-sm text-muted-foreground">{recommendation.year}</div>
           </div>
           
@@ -93,7 +93,7 @@ export function RecommendationCard({ recommendation, index, onClick }: Recommend
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0 flex-1">
             {getElementIcon(index)}
-            <CardTitle className="text-lg leading-tight line-clamp-2">{recommendation.title}</CardTitle>
+            <CardTitle className="text-lg leading-tight line-clamp-1">{recommendation.title}</CardTitle>
           </div>
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
