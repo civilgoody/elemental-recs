@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { Film, Tv } from 'lucide-react';
+import { ANIMATED_BLUR_DATA_URL } from '@/lib/constants';
 import { TMDBSearchResult } from '@/lib/types';
 
 interface PosterImageProps {
@@ -26,6 +27,8 @@ export function PosterImage({ item, size, className = '' }: PosterImageProps) {
           height={dimensions.height}
           className="w-full h-full object-cover"
           loading="lazy"
+          placeholder="blur"
+          blurDataURL={ANIMATED_BLUR_DATA_URL}
         />
       </div>
     );

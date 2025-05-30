@@ -2,7 +2,9 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ExternalLink, Film, Tv, Waves, Wind, Flame, Mountain } from 'lucide-react';
+import { ExternalLink, Film, Tv, Waves, Wind, Flame, Mountain, ChevronRight } from 'lucide-react';
+import { RatingDisplay } from '@/components/rating-display';
+import { ANIMATED_BLUR_DATA_URL } from '@/lib/constants';
 import { Recommendation } from '@/lib/types';
 
 interface RecommendationCardProps {
@@ -50,8 +52,11 @@ export function RecommendationCard({ recommendation, index, onClick }: Recommend
             src={imageUrl}
             alt={`${recommendation.title} poster`}
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover"
             loading="lazy"
+            placeholder="blur"
+            blurDataURL={ANIMATED_BLUR_DATA_URL}
           />
           {/* Gradient overlay for better text readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -96,8 +101,14 @@ export function RecommendationCard({ recommendation, index, onClick }: Recommend
             <CardTitle className="text-lg leading-tight line-clamp-1">{recommendation.title}</CardTitle>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>{recommendation.year}</span>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm text-muted-foreground">{recommendation.year}</span>
+          <RatingDisplay 
+            rating={recommendation.vote_average} 
+            voteCount={recommendation.vote_count}
+            size="sm"
+            showVoteCount={false}
+          />
         </div>
       </CardHeader>
 
@@ -109,18 +120,37 @@ export function RecommendationCard({ recommendation, index, onClick }: Recommend
           </p>
         </div>
         
-        {/* IMDb Button - always at bottom */}
-        {recommendation.imdb_url && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full mt-auto"
-            onClick={() => window.open(recommendation.imdb_url, '_blank')}
-          >
-            <ExternalLink className="w-4 h-4 mr-2" />
-            View on IMDb
-          </Button>
-        )}
+        {/* Action Buttons */}
+        <div className="space-y-2 mt-auto">
+          {/* Read More Button */}
+          {onClick && (
+            <Button 
+              variant="default" 
+              size="sm" 
+              className="w-full"
+              onClick={onClick}
+            >
+              <ChevronRight className="w-4 h-4 mr-2" />
+              Read More
+            </Button>
+          )}
+          
+          {/* IMDb Button */}
+          {recommendation.imdb_url && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(recommendation.imdb_url, '_blank');
+              }}
+            >
+              <ExternalLink className="w-4 h-4 mr-2" />
+              View on IMDb
+            </Button>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
