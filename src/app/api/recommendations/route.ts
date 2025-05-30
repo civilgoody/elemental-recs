@@ -40,7 +40,9 @@ export async function POST(request: NextRequest) {
               imdb_url: imdbId ? `https://www.imdb.com/title/${imdbId}/` : undefined,
               poster_path: tmdbResult.poster_path || undefined,
               backdrop_path: tmdbResult.backdrop_path || undefined,
-              tmdb_id: tmdbResult.id
+              tmdb_id: tmdbResult.id,
+              vote_average: tmdbResult.vote_average || undefined,
+              vote_count: tmdbResult.vote_count || undefined,
               };
           }
         } catch (error) {
