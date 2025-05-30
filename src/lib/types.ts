@@ -37,6 +37,8 @@ export interface Recommendation {
   poster_path?: string;
   backdrop_path?: string;
   tmdb_id?: number;
+  vote_average?: number;
+  vote_count?: number;
 }
 
 export interface TMDBSearchResult {
