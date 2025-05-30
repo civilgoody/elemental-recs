@@ -1,0 +1,72 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Git Commit Helper Rule
+
+## Purpose
+This rule helps analyze git diffs and generate quality, grouped git commit commands following conventional commit standards.
+
+## Instructions for AI
+When asked to analyze commits or generate git commands, follow these steps:
+
+### 1. Analyze Current State
+- Run `git status --porcelain` to see all changes
+- Run `git diff --stat` to understand scope of changes
+- I will also provide the code diff
+- Identify logical groupings of related changes
+
+### 2. Group Changes by Feature/Type
+Group changes into logical commits based on:
+- **feat**: New features or major functionality
+- **fix**: Bug fixes
+- **refactor**: Code refactoring without functional changes
+- **style**: UI/styling changes
+- **chore**: Dependencies, config, or maintenance
+- **docs**: Documentation updates
+- **test**: Test additions or modifications
+
+### 3. Generate Commit Commands
+For each group, generate commands in this format:
+```bash
+git add [specific files for this group]
+git commit -m "type(scope): brief description"
+```
+
+### 4. Commit Message Standards
+- Use conventional commit format: `type(scope): description`
+- Keep descriptions under 50 characters when possible
+- Use present tense ("add" not "added")
+- Be specific about the scope (e.g., ui, api, components)
+
+### 5. Execution Order
+- Commit foundational changes first (types, constants, utilities)
+- Then commit component changes
+- Finally commit integration/API changes
+- End with documentation or configuration updates
+
+### 6. Quality Checks
+- Ensure each commit is atomic and focused
+- Verify related files are grouped together
+- Check that commit messages are descriptive
+- Avoid mixing unrelated changes
+- Make sure u commit all staged/unstaged changes.
+
+## Example Output Format
+```bash
+# Group 1: Core utilities and types
+git add src/lib/types.ts src/lib/constants.ts
+git commit -m "feat(types): add rating fields and animated blur constant"
+
+# Group 2: New components
+git add src/components/rating-display.tsx src/components/optimized-image.tsx
+git commit -m "feat(components): add rating display and optimized image components"
+
+# Group 3: Component updates
+git add src/components/recommendation-card.tsx src/components/recommendation-details.tsx
+git commit -m "feat(ui): add ratings and read more button to recommendation cards"
+```
+
+## Usage
+To use this rule, ask: "Analyze my git diff and generate quality commit commands" or "Help me commit these changes properly"
