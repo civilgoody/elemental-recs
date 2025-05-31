@@ -62,7 +62,12 @@ Please provide exactly 5 recommendations. For each recommendation, think out lou
 }
 
 Start with your reasoning, then provide all 5 recommendations. Focus on quality matches with diverse options from different countries and time periods.`;
-
+  const tmdbApiKey = process.env.TMDB_API_KEY;
+  if (!tmdbApiKey) {
+    console.error('TMDB API key not found');
+    return null;
+  }
+  
   try {
     // Use streamText with Gemini 2.0 Flash - this should stream properly
     const result = await streamText({

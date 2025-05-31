@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef } from 'react';
-import { StreamingState, RecommendationInput } from '@/lib/types';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { StreamingState, RecommendationInput, StreamingRecommendation } from '@/lib/types';
 
 export function useStreamingRecommendations() {
   const [streamingState, setStreamingState] = useState<StreamingState>({
@@ -186,6 +186,69 @@ export function useStreamingRecommendations() {
       return newState;
     });
   }, []);
+
+  // TMDB Enhancement effect - triggers after streaming completes
+  useEffect(() => {
+    const enhanceWithTMDB = async () => {
+      if (!streamingState.isComplete) return;
+      
+      // Get all non-enhanced recommendations
+      const toEnhance = streamingState.recommendations.filter(rec => rec && !rec.enhanced);
+      
+      if (toEnhance.length === 0) return;
+
+      try {
+        // Call the enhancement API
+        const response = await fetch('/api/enhance', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ recommendations: toEnhance }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Enhancement API failed');
+        }
+
+        const { recommendations: enhancedRecs } = await response.json();
+
+        // Update state with enhanced recommendations
+        setStreamingState(prev => {
+          const newState = { ...prev };
+          const recommendations = [...prev.recommendations];
+          
+          // Map enhanced recommendations back to their positions
+          enhancedRecs.forEach((enhancedRec: StreamingRecommendation) => {
+            const index = recommendations.findIndex(rec => 
+              rec && rec.title === enhancedRec.title && rec.year === enhancedRec.year
+            );
+            if (index !== -1) {
+              recommendations[index] = enhancedRec;
+            }
+          });
+          
+          newState.recommendations = recommendations;
+          return newState;
+        });
+
+      } catch (error) {
+        console.error('Error enhancing recommendations:', error);
+        
+        // Mark all as enhanced to remove loading indicators
+        setStreamingState(prev => {
+          const newState = { ...prev };
+          const recommendations = prev.recommendations.map(rec => 
+            rec ? { ...rec, enhanced: true } : rec
+          );
+          newState.recommendations = recommendations;
+          return newState;
+        });
+      }
+    };
+
+    enhanceWithTMDB();
+  }, [streamingState.isComplete]);
 
   const stopStreaming = useCallback(() => {
     if (eventSourceRef.current) {
